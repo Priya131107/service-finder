@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Service - Smart Service Platform</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .booking-card {
+            background: var(--card-bg);
+            padding: 2.5rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-lg);
+            max-width: 500px;
+            margin: 2rem auto;
+            border-top: 5px solid var(--primary);
+        }
+        
+        #providerDetails {
+            background: var(--bg-color);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="index.html" class="logo">Smart<span>Service</span></a>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="services.html">Services</a>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="login.html" class="btn-primary" id="loginBtn">Login</a>
+        </nav>
+    </header>
+
+    <div class="booking-card fade-in">
+        <h2 style="color: var(--secondary); margin-bottom: 1rem;">Confirm Your Booking</h2>
+        
+        <div id="errorMsg" style="color: var(--emergency); margin-bottom: 15px;"></div>
+        <div id="successMsg" style="color: green; margin-bottom: 15px;"></div>
+
+        <div id="providerDetails">Loading provider...</div>
+
+        <div class="form-group" style="display: none;" id="bookingForm">
+            <label>Select Date</label>
+            <input type="date" id="bDate" class="form-control" style="margin-bottom: 1rem;">
+
+            <label>Select Time Slot</label>
+            <select id="bTime" class="form-control" style="margin-bottom: 1.5rem;">
+                <option value="09:00 AM - 12:00 PM">Morning (9 AM - 12 PM)</option>
+                <option value="12:00 PM - 03:00 PM">Afternoon (12 PM - 3 PM)</option>
+                <option value="03:00 PM - 06:00 PM">Evening (3 PM - 6 PM)</option>
+            </select>
+
+            <button class="btn-primary" style="width: 100%" onclick="submitBooking()">Confirm Appointment</button>
+        </div>
+    </div>
+
+    <script>
+        if (!document.cookie.includes("userId")) {
+            alert("You must be logged in to book a service.");
+            window.location.href = "login.html";
+        } else {
+            document.getElementById("loginBtn").style.display = "none";
+        }
+
+        const params = new URLSearchParams(window.location.search);
+        const providerId = params.get("id");
+
+        if (!providerId) {
+            document.getElementById('providerDetails').innerText = "No provider selected.";
+        } else {
+            fetch(`/api/providers/${providerId}`)
+            .then(res => res.json())
+            .then(data => {
+                if(data.error) {
+                    document.getElementById('providerDetails').innerText = "Error loading provider.";
+                } else {
+                    document.getElementById('providerDetails').innerHTML = `
+                        <h4>👨‍🔧 ${data.name}</h4>
+                        <p style="color: var(--text-muted)">${data.category} | ${data.location}</p>
+                    `;
+                    document.getElementById('bookingForm').style.display = 'block';
+                }
+            });
+        }
+
+        function submitBooking() {
+            const date = document.getElementById('bDate').value;
+            const time = document.getElementById('bTime').value;
+
+            if(!date || !time) {
+                document.getElementById('errorMsg').innerText = "Please select date and time.";
+                return;
+            }
+
+            fetch('/api/bookings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ provider_id: providerId, date, time })
+            })
+            .then(res => res.json().then(data => ({status: res.status, body: data})))
+            .then(res => {
+                if (res.status === 200) {
+                    document.getElementById('successMsg').innerText = "Booking Confirmed! You can view it in your dashboard.";
+                    document.getElementById('bookingForm').style.display = 'none';
+                } else {
+                    document.getElementById('errorMsg').innerText = res.body.error || "Failed to book";
+                }
+            });
+        }
+    </script>
+</body>
+</html>

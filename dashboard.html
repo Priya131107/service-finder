@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Smart Service Platform</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .dashboard-container {
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 0 5%;
+        }
+
+        .header-panel {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: var(--radius);
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .tab {
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .tab.active {
+            color: var(--primary);
+            border-bottom: 3px solid var(--primary);
+            margin-bottom: -2px;
+        }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .list-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="index.html" class="logo">Smart<span>Service</span></a>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="services.html">Services</a>
+            <a href="dashboard.html" style="color: var(--primary);">Dashboard</a>
+            <a href="feedback.html">Feedback</a>
+            <button class="btn-primary" onclick="logout()">Logout</button>
+        </nav>
+    </header>
+
+    <div class="dashboard-container fade-in">
+        
+        <div class="header-panel">
+            <div>
+                <h2>My Dashboard</h2>
+                <p>Manage your bookings and favorites</p>
+            </div>
+            <a href="services.html" class="btn-primary" style="background: white; color: var(--primary);">Book a Service</a>
+        </div>
+
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('bookings')">My Bookings</div>
+            <div class="tab" onclick="switchTab('favorites')">Favorite Providers</div>
+        </div>
+
+        <div id="bookings" class="tab-content active">
+            <div id="bookingsList">Loading bookings...</div>
+        </div>
+
+        <div id="favorites" class="tab-content">
+            <div id="favoritesList">Loading favorites...</div>
+        </div>
+
+    </div>
+
+    <script>
+        const user = JSON.parse(localStorage.getItem('user') || 'null');
+        if (!user) {
+            window.location.href = "login.html";
+        } else {
+            // Show user name in the header panel
+            const greet = document.querySelector('.header-panel p');
+            if (greet) greet.textContent = `Welcome back, ${user.name}!`;
+        }
+
+        function switchTab(id) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(id).classList.add('active');
+        }
+
+        function logout() {
+            fetch('/api/logout', { credentials: 'include' }).then(() => {
+                localStorage.removeItem('user');
+                document.cookie = "userId=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+                window.location.href = "login.html";
+            });
+        }
+
+        // LOAD DATA
+        fetch('/api/bookings', { credentials: 'include' })
+        .then(res => {
+            if (res.status === 401) { window.location.href = 'login.html'; return null; }
+            return res.json();
+        })
+        .then(data => {
+            if (!data) return;
+            const list = document.getElementById('bookingsList');
+            if (!data.length) return list.innerHTML = "<p>No bookings found.</p>";
+            
+            let html = '';
+            data.forEach(b => {
+                html += `
+                    <div class="list-card fade-in">
+                        <div>
+                            <h4 style="font-size: 1.1rem; color: var(--secondary);">${b.provider_name}</h4>
+                            <p style="color: var(--text-muted)">${b.category}</p>
+                            <p>📅 <b>Date:</b> ${new Date(b.date).toLocaleDateString()} | ⏰ <b>Time:</b> ${b.time}</p>
+                        </div>
+                        <span style="padding: 5px 10px; background: #dcfce7; color: #166534; border-radius: 5px; font-weight: bold;">${b.status}</span>
+                    </div>
+                `;
+            });
+            list.innerHTML = html;
+        });
+
+        fetch('/api/favorites', { credentials: 'include' })
+        .then(res => {
+            if (res.status === 401) return null;
+            return res.json();
+        })
+        .then(data => {
+            if (!data) return;
+            const list = document.getElementById('favoritesList');
+            if (!data.length) return list.innerHTML = "<p>No favorite providers found.</p>";
+            
+            let html = '';
+            data.forEach(p => {
+                html += `
+                    <div class="list-card fade-in">
+                        <div>
+                            <h4 style="font-size: 1.1rem; color: var(--secondary);">${p.name}</h4>
+                            <p style="color: var(--text-muted)">${p.category} | ⭐ ${Number(p.rating).toFixed(1)}</p>
+                        </div>
+                        <a href="profile.html?id=${p.id}" class="btn-primary">View Profile</a>
+                    </div>
+                `;
+            });
+            list.innerHTML = html;
+        });
+    </script>
+</body>
+</html>

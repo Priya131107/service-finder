@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Bookings</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background: #eef5fb;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    padding: 15px 50px;
+    background: #7fb3d5;
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: bold;
+    color: #08304a;
+}
+
+nav a {
+    margin-left: 20px;
+    text-decoration: none;
+    color: #08304a;
+}
+
+.container {
+    max-width: 800px;
+    margin: 40px auto;
+}
+
+.booking-card {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 15px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+h2 {
+    margin-bottom: 20px;
+    color: #0a3d62;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <div class="logo">ServiceFinder</div>
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="services.html">Services</a>
+        <a href="#">Bookings</a>
+    </nav>
+</header>
+
+<div class="container">
+    <h2>My Bookings</h2>
+
+    <div id="bookingList"></div>
+</div>
+
+<script>
+
+const bookings = JSON.parse(localStorage.getItem("bookings")) || [];
+
+const list = document.getElementById("bookingList");
+
+if (bookings.length === 0) {
+    list.innerHTML = "<p>No bookings yet.</p>";
+} else {
+    bookings.forEach(b => {
+        list.innerHTML += `
+            <div class="booking-card">
+                <p><b>Provider:</b> ${b.provider}</p>
+                <p><b>Date:</b> ${b.date}</p>
+                <p><b>Time:</b> ${b.time}</p>
+            </div>
+        `;
+    });
+}
+
+</script>
+
+</body>
+</html>

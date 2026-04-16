@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback - Smart Service Platform</title>
+    <meta name="description" content="Share your experience with Smart Service Platform. Your feedback helps us serve you better.">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* ── Page Layout ── */
+        .fb-hero {
+            text-align: center;
+            padding: 70px 20px 50px;
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        .fb-hero::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: url('https://www.transparenttextures.com/patterns/cubes.png');
+            opacity: 0.08;
+        }
+        .fb-hero h1 { font-size: 2.8rem; margin-bottom: 0.75rem; position: relative; z-index: 1; }
+        .fb-hero p  { font-size: 1.15rem; opacity: 0.9; position: relative; z-index: 1; }
+
+        .fb-wrapper {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 3rem 5%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2.5rem;
+            align-items: start;
+        }
+        @media (max-width: 720px) { .fb-wrapper { grid-template-columns: 1fr; } }
+
+        /* ── Form Card ── */
+        .fb-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border);
+        }
+        .fb-card h2 {
+            font-size: 1.6rem;
+            color: var(--secondary);
+            margin-bottom: 0.4rem;
+        }
+        .fb-card .sub { color: var(--text-muted); margin-bottom: 1.8rem; font-size: 0.95rem; }
+
+        /* ── Star Rating ── */
+        .star-group { margin-bottom: 1.5rem; }
+        .star-group label.block { font-weight: 500; margin-bottom: 0.6rem; display: block; }
+        .stars {
+            display: flex;
+            gap: 6px;
+            font-size: 2.2rem;
+            cursor: pointer;
+        }
+        .stars span {
+            color: #d1d5db;
+            transition: color 0.2s, transform 0.15s;
+            user-select: none;
+            line-height: 1;
+        }
+        .stars span.lit   { color: #f59e0b; }
+        .stars span:hover { transform: scale(1.2); }
+
+        /* ── Category Pills ── */
+        .pill-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 1.5rem;
+        }
+        .pill {
+            padding: 6px 14px;
+            border-radius: 999px;
+            border: 1.5px solid var(--border);
+            background: var(--bg-color);
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 500;
+        }
+        .pill.active, .pill:hover {
+            border-color: var(--primary);
+            background: #eff6ff;
+            color: var(--primary);
+        }
+
+        /* ── Submit Button & Status ── */
+        .submit-row { margin-top: 0.5rem; }
+        .submit-row button {
+            width: 100%;
+            padding: 0.9rem;
+            font-size: 1rem;
+        }
+        .fb-status {
+            margin-top: 1rem;
+            padding: 0.8rem 1rem;
+            border-radius: 10px;
+            font-weight: 500;
+            font-size: 0.95rem;
+            display: none;
+        }
+        .fb-status.success { background: #dcfce7; color: #166534; display: block; }
+        .fb-status.error   { background: #fee2e2; color: #991b1b; display: block; }
+
+        /* ── Testimonials Panel ── */
+        .testim-panel h2 {
+            font-size: 1.6rem;
+            color: var(--secondary);
+            margin-bottom: 0.4rem;
+        }
+        .testim-panel .sub { color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.95rem; }
+
+        .testim-list { display: flex; flex-direction: column; gap: 1rem; }
+
+        .testim-card {
+            background: white;
+            border-radius: 14px;
+            padding: 1.4rem 1.6rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+        .testim-card::before {
+            content: '"';
+            position: absolute;
+            top: -10px;
+            right: 18px;
+            font-size: 6rem;
+            color: #eff6ff;
+            font-family: Georgia, serif;
+            line-height: 1;
+        }
+        .testim-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+
+        .testim-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.6rem;
+        }
+        .testim-name { font-weight: 600; color: var(--secondary); }
+        .testim-stars { color: #f59e0b; font-size: 0.95rem; letter-spacing: 2px; }
+        .testim-category {
+            display: inline-block;
+            background: #eff6ff;
+            color: var(--primary);
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 2px 10px;
+            border-radius: 999px;
+            margin-bottom: 0.6rem;
+        }
+        .testim-message { color: var(--text-muted); font-size: 0.93rem; line-height: 1.6; }
+        .testim-date { color: #94a3b8; font-size: 0.78rem; margin-top: 0.5rem; }
+
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+        }
+        .empty-state .icon { font-size: 3rem; margin-bottom: 0.5rem; }
+
+        /* ── Stats Bar ── */
+        .stats-strip {
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            color: white;
+            display: flex;
+            justify-content: center;
+            gap: 4rem;
+            padding: 2rem 5%;
+            flex-wrap: wrap;
+        }
+        .stat-item { text-align: center; }
+        .stat-item .num { font-size: 2rem; font-weight: 700; }
+        .stat-item .lbl { font-size: 0.85rem; opacity: 0.8; margin-top: 4px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="index.html" class="logo">Smart<span>Service</span></a>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="services.html">Services</a>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="feedback.html" style="color: var(--primary);">Feedback</a>
+            <span id="authNav"></span>
+        </nav>
+    </header>
+
+    <!-- Hero -->
+    <div class="fb-hero fade-in">
+        <h1>💬 Share Your Experience</h1>
+        <p>Your feedback shapes the future of Smart Service Platform</p>
+    </div>
+
+    <!-- Stats Strip -->
+    <div class="stats-strip" id="statsStrip">
+        <div class="stat-item"><div class="num" id="statCount">–</div><div class="lbl">Reviews Submitted</div></div>
+        <div class="stat-item"><div class="num" id="statAvg">–</div><div class="lbl">Average Rating</div></div>
+        <div class="stat-item"><div class="num" id="statFive">–</div><div class="lbl">5-Star Reviews</div></div>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="fb-wrapper">
+
+        <!-- LEFT: Submit Form -->
+        <div class="fb-card fade-in">
+            <h2>Give Feedback</h2>
+            <p class="sub">Tell us about your experience — good or bad, we read every word.</p>
+
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" id="fb-name" class="form-control" placeholder="John Doe">
+            </div>
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="fb-email" class="form-control" placeholder="you@example.com">
+            </div>
+
+            <div class="star-group">
+                <label class="block">Your Rating</label>
+                <div class="stars" id="starRow">
+                    <span data-v="1">★</span>
+                    <span data-v="2">★</span>
+                    <span data-v="3">★</span>
+                    <span data-v="4">★</span>
+                    <span data-v="5">★</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Category</label>
+                <div class="pill-group" id="pillGroup">
+                    <div class="pill active" data-cat="General">General</div>
+                    <div class="pill" data-cat="Service Quality">Service Quality</div>
+                    <div class="pill" data-cat="Platform Experience">Platform</div>
+                    <div class="pill" data-cat="Booking">Booking</div>
+                    <div class="pill" data-cat="Suggestion">Suggestion</div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Your Message</label>
+                <textarea id="fb-message" class="form-control" rows="4"
+                    placeholder="Write your feedback here…" style="resize: vertical;"></textarea>
+            </div>
+
+            <div class="submit-row">
+                <button class="btn-primary" id="submitBtn" onclick="submitFeedback()">
+                    🚀 Submit Feedback
+                </button>
+            </div>
+            <div class="fb-status" id="fbStatus"></div>
+        </div>
+
+        <!-- RIGHT: Testimonials -->
+        <div class="testim-panel fade-in">
+            <h2>What Others Say</h2>
+            <p class="sub">Recent feedback from our community</p>
+            <div class="testim-list" id="testimList">
+                <div class="empty-state"><div class="icon">💭</div><p>Loading testimonials…</p></div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        /* ────── Auth Prefill & Nav ────── */
+        const loggedUser = JSON.parse(localStorage.getItem('user') || 'null');
+        if (loggedUser) {
+            document.getElementById('fb-name').value  = loggedUser.name  || '';
+            document.getElementById('fb-email').value = loggedUser.email || '';
+            document.getElementById('authNav').innerHTML =
+                `<button class="btn-primary" onclick="logout()">Logout</button>`;
+        } else {
+            document.getElementById('authNav').innerHTML =
+                `<a href="login.html" class="btn-primary">Login</a>`;
+        }
+        function logout() {
+            fetch('/api/logout', { credentials: 'include' }).then(() => {
+                localStorage.removeItem('user');
+                document.cookie = "userId=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+                window.location.href = 'login.html';
+            });
+        }
+
+        /* ────── Star Rating ────── */
+        let selectedRating = 0;
+        const stars = document.querySelectorAll('#starRow span');
+        stars.forEach(s => {
+            s.addEventListener('mouseover', () => lightStars(+s.dataset.v));
+            s.addEventListener('mouseout',  () => lightStars(selectedRating));
+            s.addEventListener('click', () => {
+                selectedRating = +s.dataset.v;
+                lightStars(selectedRating);
+            });
+        });
+        function lightStars(n) {
+            stars.forEach(s => s.classList.toggle('lit', +s.dataset.v <= n));
+        }
+
+        /* ────── Category Pills ────── */
+        let selectedCat = 'General';
+        document.querySelectorAll('.pill').forEach(p => {
+            p.addEventListener('click', () => {
+                document.querySelectorAll('.pill').forEach(x => x.classList.remove('active'));
+                p.classList.add('active');
+                selectedCat = p.dataset.cat;
+            });
+        });
+
+        /* ────── Submit Feedback ────── */
+        function submitFeedback() {
+            const name    = document.getElementById('fb-name').value.trim();
+            const email   = document.getElementById('fb-email').value.trim();
+            const message = document.getElementById('fb-message').value.trim();
+            const status  = document.getElementById('fbStatus');
+
+            status.className = 'fb-status';
+            status.textContent = '';
+
+            if (!name || !email || !message) {
+                status.textContent = '⚠️ Please fill in name, email and message.';
+                status.className = 'fb-status error';
+                return;
+            }
+            if (!selectedRating) {
+                status.textContent = '⚠️ Please select a star rating.';
+                status.className = 'fb-status error';
+                return;
+            }
+
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.textContent = 'Submitting…';
+
+            fetch('/api/feedback', {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, email, category: selectedCat, rating: selectedRating, message })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.error) {
+                    status.textContent = '❌ ' + data.error;
+                    status.className = 'fb-status error';
+                } else {
+                    status.textContent = '✅ ' + data.message;
+                    status.className = 'fb-status success';
+                    // Reset form
+                    document.getElementById('fb-message').value = '';
+                    selectedRating = 0;
+                    lightStars(0);
+                    loadTestimonials();   // refresh testimonials
+                }
+            })
+            .catch(() => {
+                status.textContent = '❌ Network error. Is the server running?';
+                status.className = 'fb-status error';
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.textContent = '🚀 Submit Feedback';
+            });
+        }
+
+        /* ────── Load & Render Testimonials ────── */
+        function starsHtml(n) {
+            return '★'.repeat(n) + '☆'.repeat(5 - n);
+        }
+        function timeAgo(dateStr) {
+            const diff = Date.now() - new Date(dateStr).getTime();
+            const m = Math.floor(diff / 60000);
+            if (m < 1)  return 'just now';
+            if (m < 60) return `${m}m ago`;
+            const h = Math.floor(m / 60);
+            if (h < 24) return `${h}h ago`;
+            return `${Math.floor(h / 24)}d ago`;
+        }
+
+        function loadTestimonials() {
+            fetch('/api/feedback')
+            .then(r => r.json())
+            .then(list => {
+                const el = document.getElementById('testimList');
+
+                // Update stats
+                if (list.length) {
+                    const avg  = (list.reduce((s, f) => s + f.rating, 0) / list.length).toFixed(1);
+                    const five = list.filter(f => f.rating === 5).length;
+                    document.getElementById('statCount').textContent = list.length;
+                    document.getElementById('statAvg').textContent   = avg + ' ⭐';
+                    document.getElementById('statFive').textContent  = five;
+                }
+
+                if (!list.length) {
+                    el.innerHTML = `<div class="empty-state">
+                        <div class="icon">💭</div>
+                        <p>No feedback yet. Be the first!</p>
+                    </div>`;
+                    return;
+                }
+
+                el.innerHTML = list.map(f => `
+                    <div class="testim-card fade-in">
+                        <div class="testim-header">
+                            <span class="testim-name">${escHtml(f.name)}</span>
+                            <span class="testim-stars">${starsHtml(f.rating)}</span>
+                        </div>
+                        <span class="testim-category">${escHtml(f.category)}</span>
+                        <p class="testim-message">${escHtml(f.message)}</p>
+                        <div class="testim-date">🕐 ${timeAgo(f.created_at)}</div>
+                    </div>
+                `).join('');
+            })
+            .catch(() => {
+                document.getElementById('testimList').innerHTML =
+                    `<div class="empty-state"><p>Could not load testimonials.</p></div>`;
+            });
+        }
+
+        function escHtml(s) {
+            return String(s)
+                .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+                .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+
+        // Enter key on textarea shouldn't submit (natural multiline)
+        // but Enter on name/email fields should
+        ['fb-name','fb-email'].forEach(id => {
+            document.getElementById(id).addEventListener('keydown', e => {
+                if (e.key === 'Enter') submitFeedback();
+            });
+        });
+
+        // Initial load
+        loadTestimonials();
+    </script>
+</body>
+</html>

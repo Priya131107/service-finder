@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - Smart Service Platform</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <a href="index.html" class="logo">Smart<span>Service</span></a>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="services.html">Services</a>
+            <a href="feedback.html">Feedback</a>
+            <a href="login.html" class="btn-primary">Login</a>
+        </nav>
+    </header>
+
+    <div class="auth-container fade-in">
+        <div class="auth-card">
+            <h2>Create Account</h2>
+            <p>Join our platform to book the best local professionals</p>
+            
+            <div id="errorMsg" style="color: red; margin-bottom: 15px; text-align: center;"></div>
+            <div id="successMsg" style="color: green; margin-bottom: 15px; text-align: center;"></div>
+
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" id="name" class="form-control" placeholder="John Doe">
+            </div>
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="email" class="form-control" placeholder="you@example.com">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="password" class="form-control" placeholder="••••••••">
+            </div>
+            
+            <button class="btn-primary" style="width: 100%; margin-top: 10px;" onclick="handleSignup()">Sign Up</button>
+            <p style="margin-top: 20px;">Already have an account? <a href="login.html" style="color: var(--primary);">Login</a></p>
+        </div>
+    </div>
+
+    <script>
+        function handleSignup() {
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            document.getElementById('errorMsg').innerText = '';
+            document.getElementById('successMsg').innerText = '';
+
+            fetch('/api/signup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, email, password })
+            })
+            .then(res => res.json().then(data => ({status: res.status, body: data})))
+            .then(res => {
+                if (res.status === 200) {
+                    document.getElementById('successMsg').innerText = 'Account created successfully! Redirecting...';
+                    setTimeout(() => window.location.href = 'login.html', 1500);
+                } else {
+                    document.getElementById('errorMsg').innerText = res.body.error || 'Signup failed';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

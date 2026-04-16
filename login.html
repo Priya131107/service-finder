@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Smart Service Platform</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <a href="index.html" class="logo">Smart<span>Service</span></a>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="services.html">Services</a>
+            <a href="feedback.html">Feedback</a>
+            <a href="signup.html" class="btn-primary">Sign Up</a>
+        </nav>
+    </header>
+
+    <div class="auth-container fade-in">
+        <div class="auth-card">
+            <h2>Welcome Back</h2>
+            <p>Login to book services and message providers</p>
+            
+            <div id="errorMsg" style="color: red; margin-bottom: 15px; text-align: center;"></div>
+
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="email" class="form-control" placeholder="you@example.com">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="password" class="form-control" placeholder="••••••••">
+            </div>
+            
+            <button class="btn-primary" style="width: 100%; margin-top: 10px;" onclick="handleLogin()">Login</button>
+            <p style="margin-top: 20px;">Don't have an account? <a href="signup.html" style="color: var(--primary);">Sign up</a></p>
+        </div>
+    </div>
+
+    <script>
+        function handleLogin() {
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const errorMsg = document.getElementById('errorMsg');
+            errorMsg.innerText = '';
+
+            if (!email || !password) {
+                errorMsg.innerText = 'Please enter email and password.';
+                return;
+            }
+
+            fetch('/api/login', {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            })
+            .then(res => res.json().then(data => ({ status: res.status, body: data })))
+            .then(({ status, body }) => {
+                if (status === 200) {
+                    // Store user info in localStorage for client-side auth checks
+                    localStorage.setItem('user', JSON.stringify(body.user));
+                    window.location.href = 'dashboard.html';
+                } else {
+                    errorMsg.innerText = body.error || 'Login failed. Please try again.';
+                }
+            })
+            .catch(() => {
+                errorMsg.innerText = 'Network error. Is the server running?';
+            });
+        }
+
+        // Allow pressing Enter to submit
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') handleLogin();
+        });
+    </script>
+</body>
+</html>

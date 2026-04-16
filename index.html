@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Service Platform</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .hero {
+            text-align: center;
+            padding: 100px 20px;
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: url('https://www.transparenttextures.com/patterns/cubes.png');
+            opacity: 0.1;
+        }
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            animation: fadeIn 1s ease-out forwards;
+        }
+        .hero p {
+            font-size: 1.25rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+        
+        .search-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 1rem;
+            border-radius: var(--radius);
+            display: flex;
+            gap: 10px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 10;
+        }
+        
+        .search-container input {
+            flex: 1;
+            padding: 1rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        
+        .section-title {
+            text-align: center;
+            margin: 4rem 0 2rem;
+            font-size: 2.2rem;
+            color: var(--secondary);
+        }
+        
+        .categories {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            padding: 0 5%;
+        }
+        
+        .category-card {
+            background: var(--card-bg);
+            padding: 2rem;
+            width: 180px;
+            text-align: center;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-md);
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            color: var(--text-main);
+            border: 1px solid var(--border);
+        }
+        
+        .category-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary);
+        }
+        
+        .category-card .icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .features {
+            background: white;
+            padding: 5rem 5%;
+            margin-top: 5rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        
+        .feature-box {
+            text-align: center;
+            padding: 2rem;
+        }
+        .feature-box h3 { color: var(--primary); margin: 1rem 0; }
+        
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="index.html" class="logo">Smart<span>Service</span></a>
+        <nav id="nav-menu">
+            <a href="index.html">Home</a>
+            <a href="services.html">Services</a>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="feedback.html">Feedback</a>
+            <a href="login.html" class="btn-primary" id="loginBtn">Login</a>
+            <button class="btn-primary" id="logoutBtn" style="display: none;" onclick="logout()">Logout</button>
+        </nav>
+    </header>
+
+    <section class="hero fade-in">
+        <h1>Find Trusted Local Services</h1>
+        <p>Book verified professionals for all your needs directly from your neighborhood.</p>
+
+        <div class="search-container">
+            <input type="text" id="searchKeyword" placeholder="What service do you need?">
+            <input type="text" id="searchLocation" placeholder="Location">
+            <button class="btn-primary" onclick="searchServices()">Find Services</button>
+        </div>
+    </section>
+
+    <div class="notification" id="notif"></div>
+
+    <h2 class="section-title fade-in">Popular Categories</h2>
+    <section class="categories fade-in">
+        <a href="services.html?category=Electrician" class="category-card">
+            <div class="icon">⚡</div>
+            <h3>Electrician</h3>
+        </a>
+        <a href="services.html?category=Plumber" class="category-card">
+            <div class="icon">🔧</div>
+            <h3>Plumber</h3>
+        </a>
+        <a href="services.html?category=Cleaning" class="category-card">
+            <div class="icon">🧹</div>
+            <h3>Cleaning</h3>
+        </a>
+        <a href="services.html?category=Tutor" class="category-card">
+            <div class="icon">📚</div>
+            <h3>Education</h3>
+        </a>
+        <a href="services.html?emergency=true" class="category-card" style="border-color: var(--emergency);">
+            <div class="icon">🚨</div>
+            <h3 style="color: var(--emergency);">Emergency</h3>
+        </a>
+    </section>
+
+    <section class="features fade-in">
+        <div class="feature-box">
+            <h3>Verified Providers</h3>
+            <p>Every professional on our platform is vetted with background checks for your complete peace of mind.</p>
+        </div>
+        <div class="feature-box">
+            <h3>Instant Booking</h3>
+            <p>Skip the calls. Book dates and times directly online via our streamlined secure system.</p>
+        </div>
+        <div class="feature-box">
+            <h3>Emergency Assistance</h3>
+            <p>Stuck in an emergency? Use our quick emergency filter to find live assistance around the clock.</p>
+        </div>
+    </section>
+
+    <script>
+        // Check Auth via localStorage
+        if (localStorage.getItem('user')) {
+            document.getElementById("loginBtn").style.display = "none";
+            document.getElementById("logoutBtn").style.display = "inline-block";
+        }
+
+        function logout() {
+            fetch('/api/logout', { credentials: 'include' })
+            .then(() => {
+                localStorage.removeItem('user');
+                document.cookie = "userId=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+                window.location.reload();
+            });
+        }
+
+        function searchServices() {
+            const kw = document.getElementById('searchKeyword').value;
+            const loc = document.getElementById('searchLocation').value;
+            window.location.href = `services.html?search=${kw}&location=${loc}`;
+        }
+    </script>
+</body>
+</html>

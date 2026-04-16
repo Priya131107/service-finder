@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Provider Profile - Smart Service Platform</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .profile-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            display: grid;
+            gap: 2rem;
+            grid-template-columns: 2fr 1fr;
+        }
+
+        .profile-box {
+            background: white;
+            padding: 2rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-md);
+        }
+
+        .p-title { font-size: 2rem; color: var(--secondary); margin-bottom: 0.5rem; }
+        .p-category { color: var(--primary); font-weight: bold; margin-bottom: 1rem; }
+        
+        .reviews-section {
+            margin-top: 2rem;
+        }
+        .review-card {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        @media(max-width: 768px) {
+            .profile-container { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="index.html" class="logo">Smart<span>Service</span></a>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="services.html">Services</a>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="login.html" class="btn-primary" id="loginBtn">Login</a>
+        </nav>
+    </header>
+
+    <div class="profile-container fade-in">
+        
+        <!-- Left Side -->
+        <div class="profile-box">
+            <div id="profileDetails">Loading...</div>
+            
+            <div class="reviews-section">
+                <h3>Customer Reviews</h3>
+                <div id="reviewsList">No reviews yet.</div>
+
+                <div style="margin-top: 2rem;" id="addReviewBox">
+                    <h4>Write a Review</h4>
+                    <select id="revRating" class="form-control" style="margin-top: 10px; margin-bottom: 10px;">
+                        <option value="5">⭐⭐⭐⭐⭐ Excellent (- 5)</option>
+                        <option value="4">⭐⭐⭐⭐ Good (- 4)</option>
+                        <option value="3">⭐⭐⭐ Average (- 3)</option>
+                        <option value="2">⭐⭐ Poor (- 2)</option>
+                        <option value="1">⭐ Terrible (- 1)</option>
+                    </select>
+                    <textarea id="revComment" class="form-control" rows="3" placeholder="Tell us about your experience..." style="margin-bottom: 10px;"></textarea>
+                    <button class="btn-primary" onclick="submitReview()">Submit Review</button>
+                    <p id="revMsg"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side -->
+        <div class="profile-box" style="height: fit-content; text-align: center;">
+            <h3 style="margin-bottom: 1rem;">Actions</h3>
+            <a href="#" id="bookLink" class="btn-primary" style="width: 100%; margin-bottom: 10px;">Schedule Booking</a>
+            <a href="#" id="chatLink" class="btn-primary" style="width: 100%; margin-bottom: 10px; background: var(--secondary);">Message Provider</a>
+            <button id="favBtn" class="btn-primary" style="width: 100%; background: var(--text-muted);" onclick="toggleFavorite()">❤️ Add to Favorites</button>
+        </div>
+
+    </div>
+
+    <script>
+        const isLoggedIn = document.cookie.includes("userId");
+        if (isLoggedIn) {
+            document.getElementById("loginBtn").style.display = "none";
+        } else {
+            document.getElementById('addReviewBox').style.display = 'none';
+        }
+
+        const params = new URLSearchParams(window.location.search);
+        const providerId = params.get("id");
+
+        if (providerId) {
+            loadProfile();
+            loadReviews();
+            document.getElementById('bookLink').href = `booking.html?id=${providerId}`;
+            // Let's assume chat routes to a user view passing providerId
+            document.getElementById('chatLink').href = `chat.html?userId=${providerId}`;
+        }
+
+        function loadProfile() {
+            fetch(`/api/providers/${providerId}`)
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('profileDetails').innerHTML = `
+                    <h1 class="p-title">${data.name} ${data.is_emergency ? '🚨' : ''}</h1>
+                    <p class="p-category">${data.category}</p>
+                    <p>📍 <b>Location:</b> ${data.location}</p>
+                    <p>📞 <b>Contact:</b> ${data.contact}</p>
+                    <p>💼 <b>Experience:</b> ${data.experience} Years</p>
+                    <p style="font-size: 1.2rem; margin-top: 10px;">⭐ <b>Rating:</b> ${data.rating.toFixed(1)}/5</p>
+                `;
+            });
+        }
+
+        function loadReviews() {
+            fetch(`/api/providers/${providerId}/reviews`)
+            .then(res => res.json())
+            .then(data => {
+                if(data.length > 0) {
+                    let html = '';
+                    data.forEach(r => {
+                        html += `
+                            <div class="review-card">
+                                <strong>${r.user_name}</strong> - ⭐ ${r.rating}/5
+                                <p style="margin-top: 8px;">"${r.comment}"</p>
+                            </div>
+                        `;
+                    });
+                    document.getElementById('reviewsList').innerHTML = html;
+                }
+            });
+        }
+
+        function submitReview() {
+            const rating = document.getElementById('revRating').value;
+            const comment = document.getElementById('revComment').value;
+            
+            fetch('/api/reviews', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ provider_id: providerId, rating, comment })
+            }).then(res => res.json()).then(data => {
+                document.getElementById('revMsg').innerText = "Review submitted!";
+                loadReviews();
+            });
+        }
+
+        function toggleFavorite() {
+            if(!isLoggedIn) { alert("Please login first"); return; }
+            fetch('/api/favorites', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ provider_id: providerId })
+            }).then(res => res.json()).then(data => {
+                const btn = document.getElementById('favBtn');
+                if(data.isFavorite) {
+                    btn.style.background = 'var(--emergency)';
+                    btn.innerText = '❤️ Remove Favorite';
+                } else {
+                    btn.style.background = 'var(--text-muted)';
+                    btn.innerText = '❤️ Add to Favorites';
+                }
+            });
+        }
+    </script>
+</body>
+</html>
